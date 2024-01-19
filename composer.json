@@ -1,0 +1,32 @@
+{
+    "name": "n5s/wp-symfony-local-server",
+    "description": "A set a hooks to fix running WordPress on Symfony Local Server with local domain names",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nicolas Lemoine",
+            "email": "nico@n5s.dev"
+        }
+    ],
+    "require": {
+        "wecodemore/wordpress-early-hook": "^1.2"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.37",
+        "symplify/easy-coding-standard": "^12"
+    },
+    "autoload": {
+        "files": [
+            "src/bootstrap.php"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
+    },
+    "scripts": {
+        "cs": "ecs check",
+        "cs:fix": "ecs check --fix"
+    }
+}
