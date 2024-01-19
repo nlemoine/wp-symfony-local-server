@@ -118,12 +118,13 @@ function shouldSendThroughProxy($null, $uri, $check, $home): ?bool
 
 /**
  * Removes SSL verification for requests to the local server.
- *
- * @param string      $url        The request URL.
+ * @param bool|string $verify Boolean to control whether to verify the SSL connection
+ *                                or path to an SSL certificate.
+ * @param string $url The request URL.
  */
-function verifySsl($verify, $url): bool
+function verifySsl($verify, $url): bool|string
 {
-    if ($verify === false) {
+    if ($verify === false || is_string($verify)) {
         return $verify;
     }
     return parse_url($url, PHP_URL_HOST) === parse_url(get_option('siteurl'), PHP_URL_HOST) ? false : $verify;

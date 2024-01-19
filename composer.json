@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "php": "^8.0",
         "wecodemore/wordpress-early-hook": "^1.2"
     },
     "require-dev": {
