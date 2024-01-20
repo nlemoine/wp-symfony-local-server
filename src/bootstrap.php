@@ -7,6 +7,33 @@ namespace n5s\WpSymfonyLocalServer;
 use function WeCodeMore\earlyAddFilter;
 
 /**
+ * Get home directory.
+ *
+ * @return string
+ */
+function getHomeDir(): string
+{
+    static $homeDir;
+    if (isset($homeDir)) {
+        return $homeDir;
+    }
+
+    $home = getenv('HOME');
+    if (empty($home)) {
+      if (!empty($_SERVER['HOMEDRIVE']) && !empty($_SERVER['HOMEPATH'])) {
+        // home on windows
+        $home = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
+      }
+    }
+
+    if (empty($home)) {
+        $home = posix_getpwuid(posix_geteuid())['dir'] ?? '';
+    }
+
+    return $homeDir = rtrim((string) $home, '/');
+}
+
+/**
  * Get Symfony Local Server configuration.
  *
  * @return array|null
@@ -18,7 +45,7 @@ function getSymfonyConfig(): array
         return $symfonyConfig;
     }
 
-    $symfonyconfigPath = sprintf('%s/.symfony5/proxy.json', $_SERVER['HOME'] ?? '');
+    $symfonyconfigPath = sprintf('%s/.symfony5/proxy.json', getHomeDir());
     if (! is_readable($symfonyconfigPath)) {
         return $symfonyConfig = [];
     }
@@ -109,25 +136,21 @@ function isSymfonyLocalServer(): bool
  */
 function shouldSendThroughProxy($null, $uri, $check, $home): ?bool
 {
-    if ($null !== null) {
-        return $null;
-    }
-
     return isset($check['host']) && isset($home['host']) && $check['host'] === $home['host'] ? true : $null;
 }
 
 /**
  * Removes SSL verification for requests to the local server.
- * @param bool|string $verify Boolean to control whether to verify the SSL connection
- *                                or path to an SSL certificate.
+ *
+ * @param bool|string $verify Boolean to control whether to verify the SSL connection or path to an SSL certificate.
  * @param string $url The request URL.
  */
 function verifySsl($verify, $url): bool|string
 {
-    if ($verify === false || is_string($verify)) {
+    if (parse_url($url, PHP_URL_HOST) !== parse_url(get_option('siteurl'), PHP_URL_HOST)) {
         return $verify;
     }
-    return parse_url($url, PHP_URL_HOST) === parse_url(get_option('siteurl'), PHP_URL_HOST) ? false : $verify;
+    return sprintf('%s/.symfony5/certs/rootCA.pem', getHomeDir());
 }
 
 /**
