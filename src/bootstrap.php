@@ -215,10 +215,30 @@ function redirectWpAdminStatus($status, $location): int
 
     return admin_url('index.php') === $location ? 302 : $status;
 }
+/**
+ * Adds index.php to the admin URL if no path is specified.
+ *
+ * @param string      $url     The complete admin area URL including scheme and path.
+ * @param string      $path    Path relative to the admin area URL. Blank string if no path is specified.
+ * @param int|null    $blog_id Site ID, or null for the current site.
+ * @param string|null $scheme  The scheme to use. Accepts 'http', 'https',
+ *                             'admin', or null. Default 'admin', which obeys force_ssl_admin() and is_ssl().
+ */
+function rewriteAdminUrl($url, $path, $blog_id, $scheme): string
+{
+    $pathParts = parse_url($path);
+    // It already has a path
+    if (! empty($pathParts['path'])) {
+        return $url;
+    }
+
+    return empty($path) ? sprintf('%s/index.php', rtrim($url, '/')) : str_replace($path, sprintf('index.php%s', $path), $url);
+}
 
 if (isSymfonyLocalServer()) {
     earlyAddFilter('pre_http_send_through_proxy', __NAMESPACE__ . '\\shouldSendThroughProxy', 10, 4);
     earlyAddFilter('https_ssl_verify', __NAMESPACE__ . '\\verifySsl', 10, 2);
-    earlyAddFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', 10, 2);
+    earlyAddFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', PHP_INT_MAX, 2);
     earlyAddFilter('wp_redirect_status', __NAMESPACE__ . '\\redirectWpAdminStatus', 10, 2);
+    earlyAddFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
 }
