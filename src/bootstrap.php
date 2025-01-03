@@ -8,11 +8,10 @@ use function WeCodeMore\earlyAddFilter;
 
 /**
  * Get home directory.
- *
- * @return string
  */
 function getHomeDir(): string
 {
+    /** @var string|null */
     static $homeDir;
     if (isset($homeDir)) {
         return $homeDir;
@@ -20,10 +19,10 @@ function getHomeDir(): string
 
     $home = getenv('HOME');
     if (empty($home)) {
-      if (!empty($_SERVER['HOMEDRIVE']) && !empty($_SERVER['HOMEPATH'])) {
-        // home on windows
-        $home = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
-      }
+        if (! empty($_SERVER['HOMEDRIVE']) && is_string($_SERVER['HOMEDRIVE']) && ! empty($_SERVER['HOMEPATH']) && is_string($_SERVER['HOMEPATH'])) {
+            // home on windows
+            $home = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
+        }
     }
 
     if (empty($home)) {
@@ -36,28 +35,45 @@ function getHomeDir(): string
 /**
  * Get Symfony Local Server configuration.
  *
- * @return array|null
+ * @return array{tld: string, host: string, port: int, domains: array<string, string>}|array{}
  */
 function getSymfonyConfig(): array
 {
+    /** @var array{tld: string, host: string, port: int, domains: array<string, string>}|array{}|null $symfonyConfig */
     static $symfonyConfig;
     if (isset($symfonyConfig)) {
         return $symfonyConfig;
     }
 
     $symfonyconfigPath = sprintf('%s/.symfony5/proxy.json', getHomeDir());
-    if (! is_readable($symfonyconfigPath)) {
+    if (! is_file($symfonyconfigPath) && ! is_readable($symfonyconfigPath)) {
         return $symfonyConfig = [];
     }
-    return $symfonyConfig = json_decode(file_get_contents($symfonyconfigPath), true);
+
+    $json = file_get_contents($symfonyconfigPath);
+    if ($json === false) {
+        return $symfonyConfig = [];
+    }
+
+    $config = json_decode(
+        json: $json,
+        associative: true,
+        flags: JSON_THROW_ON_ERROR
+    );
+
+    if (! is_array($config)) {
+        return $symfonyConfig = [];
+    }
+
+    return $symfonyConfig = $config;
 }
 
 /**
  * Get Symfony Local Server proxy port.
  */
-function getSymfonyProxyPort(): string
+function getSymfonyProxyPort(): int
 {
-    return (string) getSymfonyConfig()['port'] ?? '7080';
+    return (int) (getSymfonyConfig()['port'] ?? 7080);
 }
 
 /**
@@ -70,6 +86,8 @@ function getSymfonyProxyTld(): string
 
 /**
  * Get Symfony Local Server proxy domains.
+ *
+ * @return array<string, string>
  */
 function getSymfonyProxyDomains(): array
 {
@@ -83,6 +101,7 @@ function getSymfonyProxyDomains(): array
  */
 function getCurrentSymfonyDomain(): ?string
 {
+    /** @var string|null */
     static $symfonyCurrentDomain;
     if (isset($symfonyCurrentDomain)) {
         return $symfonyCurrentDomain;
@@ -90,7 +109,7 @@ function getCurrentSymfonyDomain(): ?string
 
     $tld = getSymfonyProxyTld();
     $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? null;
-    if ($documentRoot === null) {
+    if (! is_string($documentRoot)) {
         return $symfonyCurrentDomain = null;
     }
 
@@ -108,48 +127,52 @@ getCurrentSymfonyDomain() && define('WP_HOME', sprintf('https://%s', getCurrentS
 
 // Define proxy settings if running in Symfony Local Server
 defined('WP_PROXY_HOST') || define('WP_PROXY_HOST', 'http://127.0.0.1');
-defined('WP_PROXY_PORT') || define('WP_PROXY_PORT', getSymfonyProxyPort());
+defined('WP_PROXY_PORT') || define('WP_PROXY_PORT', (string) getSymfonyProxyPort());
 
 /**
  * Identify if running in Symfony Local Server.
  */
 function isSymfonyLocalServer(): bool
 {
+    /** @var bool|null */
     static $isSymfonyLocalServer;
     if (isset($isSymfonyLocalServer)) {
         return $isSymfonyLocalServer;
     }
 
     // Non CLI requests
-    if (! in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
-        return $isSymfonyLocalServer = explode('/', $_SERVER['SERVER_SOFTWARE'] ?? '')[0] === 'symfony-cli';
+    if (! in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true) && isset($_SERVER['SERVER_SOFTWARE']) && is_string($_SERVER['SERVER_SOFTWARE'])) {
+        return $isSymfonyLocalServer = explode('/', $_SERVER['SERVER_SOFTWARE'])[0] === 'symfony-cli';
     }
+
     return $isSymfonyLocalServer = getCurrentSymfonyDomain() !== '';
 }
 
 /**
  * Send through proxy if using Symfony Local Server.
  *
+ * @param bool|null $override  Whether to send the request through the proxy. Default null.
  * @param string    $uri      URL of the request.
  * @param array     $check    Associative array result of parsing the request URL with `parse_url()`.
  * @param array     $home     Associative array result of parsing the site URL with `parse_url()`.
  */
-function shouldSendThroughProxy($null, $uri, $check, $home): ?bool
+function shouldSendThroughProxy($override, $uri, $check, $home): ?bool
 {
-    return isset($check['host']) && isset($home['host']) && $check['host'] === $home['host'] ? true : $null;
+    return isset($check['host']) && isset($home['host']) && $check['host'] === $home['host'] ? true : $override;
 }
 
 /**
- * Removes SSL verification for requests to the local server.
+ * Provides SSL certificate for requests to the local server.
  *
  * @param bool|string $verify Boolean to control whether to verify the SSL connection or path to an SSL certificate.
  * @param string $url The request URL.
  */
 function verifySsl($verify, $url): bool|string
 {
-    if (parse_url($url, PHP_URL_HOST) !== parse_url(get_option('siteurl'), PHP_URL_HOST)) {
+    if (parse_url($url, PHP_URL_HOST) !== parse_url(home_url(), PHP_URL_HOST)) {
         return $verify;
     }
+
     return sprintf('%s/.symfony5/certs/rootCA.pem', getHomeDir());
 }
 
@@ -158,7 +181,7 @@ function verifySsl($verify, $url): bool|string
  *
  * @see https://github.com/symfony-cli/symfony-cli/issues/237
  *
- * @param string $redirect_url  The redirect URL.
+ * @param string|false|null $redirect_url  The redirect URL.
  * @param string $requested_url The requested URL.
  * @return string|false|null
  */
@@ -166,13 +189,14 @@ function redirectWpAdmin($redirect_url, $requested_url)
 {
     $adminUrlPath = parse_url(admin_url(), PHP_URL_PATH);
     $requestedUrlPath = parse_url($requested_url, PHP_URL_PATH);
-    $requestUrlBasename = pathinfo($requestedUrlPath, PATHINFO_BASENAME);
-    if ($requestUrlBasename === 'index.php') {
+    $requestUrlBasename = pathinfo((string) $requestedUrlPath, PATHINFO_BASENAME);
+    if ($requestUrlBasename === 'index.php' && is_string($requestedUrlPath)) {
         $requestedUrlPath = rtrim($requestedUrlPath, $requestUrlBasename);
     }
     if ($requestedUrlPath === $adminUrlPath) {
         return admin_url('index.php');
     }
+
     return $redirect_url;
 }
 
@@ -184,6 +208,11 @@ function redirectWpAdmin($redirect_url, $requested_url)
  */
 function redirectWpAdminStatus($status, $location): int
 {
+    // May happen when WP_INSTALLING
+    if (! function_exists('admin_url')) {
+        return $status;
+    }
+
     return admin_url('index.php') === $location ? 302 : $status;
 }
 
