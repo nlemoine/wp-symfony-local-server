@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.1.1...v1.2.0) (2025-01-03)
+
+
+### Features
+
+* Rewrite admin URLs ([00f136c](https://github.com/nlemoine/wp-symfony-local-server/commit/00f136c264f758baf3d4152fdc0be4fbeef1d931))
+
 ## [1.1.1](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.1.0...v1.1.1) (2025-01-03)
 
 
