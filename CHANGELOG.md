@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.1](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.1.0...v1.1.1) (2025-01-03)
+
+
+### Bug Fixes
+
+* Undefined function when WP_INSTALLING ([f392959](https://github.com/nlemoine/wp-symfony-local-server/commit/f39295961003829b32fede00267e549d944efbb9))
+
+
+### Miscellaneous Chores
+
+* Add PHPStan ([a2b2ecb](https://github.com/nlemoine/wp-symfony-local-server/commit/a2b2ecbe06c68c33b50c54777f7d9afd0df63a3a))
+
 ## [1.1.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.0.1...v1.1.0) (2024-01-20)
 
 
