@@ -14,7 +14,11 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.37",
-        "symplify/easy-coding-standard": "^12"
+        "php-stubs/wordpress-stubs": "^6.7",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "symplify/easy-coding-standard": "^12",
+        "szepeviktor/phpstan-wordpress": "^2.0"
     },
     "autoload": {
         "files": [
@@ -23,7 +27,8 @@
     },
     "config": {
         "allow-plugins": {
-            "ergebnis/composer-normalize": true
+            "ergebnis/composer-normalize": true,
+            "phpstan/extension-installer": true
         }
     },
     "scripts": {
