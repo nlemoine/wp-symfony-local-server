@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.2.0...v1.2.1) (2025-03-25)
+
+
+### Bug Fixes
+
+* Do not define constants outside ([5562eca](https://github.com/nlemoine/wp-symfony-local-server/commit/5562eca1d0b2da3d3bc44f52829785a029134958))
+
 ## [1.2.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.1.1...v1.2.0) (2025-01-03)
 
 
