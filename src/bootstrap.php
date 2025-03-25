@@ -122,13 +122,6 @@ function getCurrentSymfonyDomain(): ?string
     return $symfonyCurrentDomain = null;
 }
 
-// Automatically set WP_HOME to the current Symfony Local Server domain
-getCurrentSymfonyDomain() && define('WP_HOME', sprintf('https://%s', getCurrentSymfonyDomain()));
-
-// Define proxy settings if running in Symfony Local Server
-defined('WP_PROXY_HOST') || define('WP_PROXY_HOST', 'http://127.0.0.1');
-defined('WP_PROXY_PORT') || define('WP_PROXY_PORT', (string) getSymfonyProxyPort());
-
 /**
  * Identify if running in Symfony Local Server.
  */
@@ -236,6 +229,10 @@ function rewriteAdminUrl($url, $path, $blog_id, $scheme): string
 }
 
 if (isSymfonyLocalServer()) {
+    // Define proxy settings if running in Symfony Local Server
+    defined('WP_PROXY_HOST') || define('WP_PROXY_HOST', 'http://127.0.0.1');
+    defined('WP_PROXY_PORT') || define('WP_PROXY_PORT', (string) getSymfonyProxyPort());
+
     earlyAddFilter('pre_http_send_through_proxy', __NAMESPACE__ . '\\shouldSendThroughProxy', 10, 4);
     earlyAddFilter('https_ssl_verify', __NAMESPACE__ . '\\verifySsl', 10, 2);
     earlyAddFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', PHP_INT_MAX, 2);
