@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.0.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.2.0...v2.0.0) (2025-12-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Minimum PHP version is now 8.2 Replaced wecodemore/wp-hook-kit with n5s/wp-hook-kit
+
+### Features
+
+* require PHP 8.2+, switch to n5s/wp-hook-kit ([fa1e4a5](https://github.com/nlemoine/wp-symfony-local-server/commit/fa1e4a55f268d7a45319aac659d5275fda6c05f1))
+
+
+### Bug Fixes
+
+* Do not define constants outside ([5562eca](https://github.com/nlemoine/wp-symfony-local-server/commit/5562eca1d0b2da3d3bc44f52829785a029134958))
+
 ## [1.2.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.1.1...v1.2.0) (2025-01-03)
 
 
