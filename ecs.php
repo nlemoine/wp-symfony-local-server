@@ -2,10 +2,16 @@
 
 declare(strict_types=1);
 
-use Symplify\EasyCodingStandard\ValueObject\Set\SetList;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return ECSConfig::configure()
-    ->withPaths([__DIR__ . '/src'])
-    ->withSets([SetList::COMMON, SetList::PSR_12, SetList::CLEAN_CODE, SetList::DOCBLOCK])
-;
+    ->withPaths([
+        __DIR__ . '/src',
+        __DIR__ . '/tests',
+    ])
+    ->withRootFiles()
+    ->withPreparedSets(
+        psr12: true,
+        common: true,
+        cleanCode: true,
+    );

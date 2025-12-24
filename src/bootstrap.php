@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace n5s\WpSymfonyLocalServer;
 
-use function WeCodeMore\earlyAddFilter;
+use n5s\WpHookKit\Hook;
 
 /**
  * Get home directory.
@@ -46,7 +46,7 @@ function getSymfonyConfig(): array
     }
 
     $symfonyconfigPath = sprintf('%s/.symfony5/proxy.json', getHomeDir());
-    if (! is_file($symfonyconfigPath) && ! is_readable($symfonyconfigPath)) {
+    if (! is_file($symfonyconfigPath) || ! is_readable($symfonyconfigPath)) {
         return $symfonyConfig = [];
     }
 
@@ -77,7 +77,7 @@ function getSymfonyProxyPort(): int
 }
 
 /**
- * Get Symfony Local Server proxy port.
+ * Get Symfony Local Server proxy TLD.
  */
 function getSymfonyProxyTld(): string
 {
@@ -138,16 +138,16 @@ function isSymfonyLocalServer(): bool
         return $isSymfonyLocalServer = explode('/', $_SERVER['SERVER_SOFTWARE'])[0] === 'symfony-cli';
     }
 
-    return $isSymfonyLocalServer = getCurrentSymfonyDomain() !== '';
+    return $isSymfonyLocalServer = getCurrentSymfonyDomain() !== null;
 }
 
 /**
  * Send through proxy if using Symfony Local Server.
  *
- * @param bool|null $override  Whether to send the request through the proxy. Default null.
- * @param string    $uri      URL of the request.
- * @param array     $check    Associative array result of parsing the request URL with `parse_url()`.
- * @param array     $home     Associative array result of parsing the site URL with `parse_url()`.
+ * @param bool|null                $override Whether to send the request through the proxy. Default null.
+ * @param string                   $uri      URL of the request.
+ * @param array<string, int|string> $check    Associative array result of parsing the request URL with `parse_url()`.
+ * @param array<string, int|string> $home     Associative array result of parsing the site URL with `parse_url()`.
  */
 function shouldSendThroughProxy($override, $uri, $check, $home): ?bool
 {
@@ -194,7 +194,7 @@ function redirectWpAdmin($redirect_url, $requested_url)
 }
 
 /**
- * Chnage redirect status so redirects to admin don't get cached.
+ * Change redirect status so redirects to admin don't get cached.
  *
  * @param int    $status   The HTTP response status code to use.
  * @param string $location The path or URL to redirect to.
@@ -208,6 +208,7 @@ function redirectWpAdminStatus($status, $location): int
 
     return admin_url('index.php') === $location ? 302 : $status;
 }
+
 /**
  * Adds index.php to the admin URL if no path is specified.
  *
@@ -233,9 +234,9 @@ if (isSymfonyLocalServer()) {
     defined('WP_PROXY_HOST') || define('WP_PROXY_HOST', 'http://127.0.0.1');
     defined('WP_PROXY_PORT') || define('WP_PROXY_PORT', (string) getSymfonyProxyPort());
 
-    earlyAddFilter('pre_http_send_through_proxy', __NAMESPACE__ . '\\shouldSendThroughProxy', 10, 4);
-    earlyAddFilter('https_ssl_verify', __NAMESPACE__ . '\\verifySsl', 10, 2);
-    earlyAddFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', PHP_INT_MAX, 2);
-    earlyAddFilter('wp_redirect_status', __NAMESPACE__ . '\\redirectWpAdminStatus', 10, 2);
-    earlyAddFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
+    Hook::addFilter('pre_http_send_through_proxy', __NAMESPACE__ . '\\shouldSendThroughProxy', 10, 4);
+    Hook::addFilter('https_ssl_verify', __NAMESPACE__ . '\\verifySsl', 10, 2);
+    Hook::addFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', PHP_INT_MAX, 2);
+    Hook::addFilter('wp_redirect_status', __NAMESPACE__ . '\\redirectWpAdminStatus', 10, 2);
+    Hook::addFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
 }

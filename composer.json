@@ -1,38 +1,58 @@
 {
     "name": "n5s/wp-symfony-local-server",
-    "description": "A set a hooks to fix running WordPress on Symfony Local Server with local domain names",
+    "description": "Fixes WordPress compatibility issues when running on Symfony Local Server with local domain names",
     "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "wordpress",
+        "symfony-cli",
+        "local-server",
+        "development"
+    ],
     "authors": [
         {
             "name": "Nicolas Lemoine",
             "email": "nico@n5s.dev"
         }
     ],
+    "support": {
+        "issues": "https://github.com/nlemoine/wp-symfony-local-server/issues",
+        "source": "https://github.com/nlemoine/wp-symfony-local-server"
+    },
     "require": {
-        "php": "^8.0",
-        "wecodemore/wordpress-early-hook": "^1.2"
+        "php": "^8.2",
+        "n5s/wp-hook-kit": "^1.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.37",
+        "mantle-framework/testkit": "^1.16",
         "php-stubs/wordpress-stubs": "^6.7",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
-        "symplify/easy-coding-standard": "^12",
-        "szepeviktor/phpstan-wordpress": "^2.0"
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "symplify/easy-coding-standard": "^13.0"
     },
     "autoload": {
         "files": [
             "src/bootstrap.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "n5s\\WpSymfonyLocalServer\\Tests\\": "tests/"
+        }
+    },
     "config": {
         "allow-plugins": {
+            "alleyinteractive/composer-wordpress-autoloader": true,
             "ergebnis/composer-normalize": true,
             "phpstan/extension-installer": true
         }
     },
     "scripts": {
         "cs": "ecs check",
-        "cs:fix": "ecs check --fix"
+        "cs:fix": "ecs check --fix",
+        "phpstan": "phpstan analyse --memory-limit=512M",
+        "test": "phpunit"
     }
 }
