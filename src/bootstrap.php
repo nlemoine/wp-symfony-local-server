@@ -7,29 +7,46 @@ namespace n5s\WpSymfonyLocalServer;
 use n5s\WpHookKit\Hook;
 
 /**
+ * Read an environment variable from $_SERVER, $_ENV, then getenv() as a last resort.
+ *
+ * $_SERVER and $_ENV are populated at request start and don't require a syscall on each
+ * read, and unlike getenv() they are thread-safe. getenv() stays as a fallback for setups
+ * where variables_order omits 'E' and the web server doesn't expose the var via $_SERVER.
+ *
+ * @internal
+ */
+function readEnvVar(string $name): string
+{
+    foreach ([$_SERVER[$name] ?? null, $_ENV[$name] ?? null, getenv($name)] as $value) {
+        if (is_string($value) && $value !== '') {
+            return $value;
+        }
+    }
+
+    return '';
+}
+
+/**
  * Get home directory.
  */
 function getHomeDir(): string
 {
-    /** @var string|null */
-    static $homeDir;
-    if (isset($homeDir)) {
-        return $homeDir;
-    }
+    $home = readEnvVar('HOME');
 
-    $home = getenv('HOME');
-    if (empty($home)) {
-        if (! empty($_SERVER['HOMEDRIVE']) && is_string($_SERVER['HOMEDRIVE']) && ! empty($_SERVER['HOMEPATH']) && is_string($_SERVER['HOMEPATH'])) {
-            // home on windows
-            $home = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
+    if ($home === '') {
+        // home on windows
+        $homeDrive = readEnvVar('HOMEDRIVE');
+        $homePath = readEnvVar('HOMEPATH');
+        if ($homeDrive !== '' && $homePath !== '') {
+            $home = $homeDrive . $homePath;
         }
     }
 
-    if (empty($home)) {
-        $home = posix_getpwuid(posix_geteuid())['dir'] ?? '';
+    if ($home === '') {
+        $home = (string) (posix_getpwuid(posix_geteuid())['dir'] ?? '');
     }
 
-    return $homeDir = rtrim((string) $home, '/');
+    return rtrim($home, '/');
 }
 
 /**
@@ -46,12 +63,12 @@ function getUserConfigDir(): string
     }
 
     if (\PHP_OS_FAMILY === 'Windows') {
-        $appData = getenv('APPDATA');
-        return ! empty($appData) ? $appData : getHomeDir() . '/AppData/Roaming';
+        $appData = readEnvVar('APPDATA');
+        return $appData !== '' ? $appData : getHomeDir() . '/AppData/Roaming';
     }
 
-    $xdg = getenv('XDG_CONFIG_HOME');
-    return ! empty($xdg) ? $xdg : getHomeDir() . '/.config';
+    $xdg = readEnvVar('XDG_CONFIG_HOME');
+    return $xdg !== '' ? $xdg : getHomeDir() . '/.config';
 }
 
 /**
@@ -63,18 +80,12 @@ function getUserConfigDir(): string
  */
 function getSymfonyHomeDir(): string
 {
-    /** @var string|null */
-    static $dir;
-    if (isset($dir)) {
-        return $dir;
-    }
-
     $legacy = getHomeDir() . '/.symfony5';
     if (is_dir($legacy)) {
-        return $dir = $legacy;
+        return $legacy;
     }
 
-    return $dir = getUserConfigDir() . '/symfony5';
+    return getUserConfigDir() . '/symfony5';
 }
 
 /**
