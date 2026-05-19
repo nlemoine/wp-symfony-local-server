@@ -218,6 +218,11 @@ function shouldSendThroughProxy($override, $uri, $check, $home): ?bool
  */
 function verifySsl($verify, $url): bool|string
 {
+    // May happen when WP_INSTALLING
+    if (! function_exists('home_url')) {
+        return $verify;
+    }
+
     if (parse_url($url, PHP_URL_HOST) !== parse_url(home_url(), PHP_URL_HOST)) {
         return $verify;
     }
@@ -238,6 +243,11 @@ function verifySsl($verify, $url): bool|string
  */
 function redirectWpAdmin($redirect_url, $requested_url)
 {
+    // May happen when WP_INSTALLING
+    if (! function_exists('admin_url')) {
+        return $redirect_url;
+    }
+
     $adminUrlPath = parse_url(admin_url(), PHP_URL_PATH);
     $requestedUrlPath = parse_url($requested_url, PHP_URL_PATH);
     $requestUrlBasename = pathinfo((string) $requestedUrlPath, PATHINFO_BASENAME);
