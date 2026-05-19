@@ -297,5 +297,6 @@ if (isSymfonyLocalServer()) {
     Hook::addFilter('redirect_canonical', __NAMESPACE__ . '\\redirectWpAdmin', PHP_INT_MAX, 2);
     Hook::addFilter('wp_redirect_status', __NAMESPACE__ . '\\redirectWpAdminStatus', 10, 2);
     Hook::addFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
+    Hook::addFilter('network_admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
 }
 

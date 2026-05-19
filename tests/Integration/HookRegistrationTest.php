@@ -58,6 +58,13 @@ class HookRegistrationTest extends TestCase
         );
     }
 
+    public function testNetworkAdminUrlFilterIsRegistered(): void
+    {
+        $this->assertNotFalse(
+            has_filter('network_admin_url', 'n5s\WpSymfonyLocalServer\rewriteAdminUrl')
+        );
+    }
+
     public function testAdminUrlFilterIsAppliedOnce(): void
     {
         $this->expectApplied('admin_url')->once();
