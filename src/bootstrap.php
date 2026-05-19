@@ -33,6 +33,51 @@ function getHomeDir(): string
 }
 
 /**
+ * Get the OS-specific user config directory.
+ *
+ * Mirrors Go's os.UserConfigDir() used by symfony-cli.
+ *
+ * @see https://github.com/symfony-cli/symfony-cli/blob/16762b6fd4ec93770011e58ffa443bf9a6940007/util/util.go
+ */
+function getUserConfigDir(): string
+{
+    if (\PHP_OS_FAMILY === 'Darwin') {
+        return getHomeDir() . '/Library/Application Support';
+    }
+
+    if (\PHP_OS_FAMILY === 'Windows') {
+        $appData = getenv('APPDATA');
+        return ! empty($appData) ? $appData : getHomeDir() . '/AppData/Roaming';
+    }
+
+    $xdg = getenv('XDG_CONFIG_HOME');
+    return ! empty($xdg) ? $xdg : getHomeDir() . '/.config';
+}
+
+/**
+ * Get Symfony CLI home directory.
+ *
+ * Since symfony-cli prefers OS-specific config dirs but keeps the legacy ~/.symfony5 path when present.
+ *
+ * @see https://github.com/symfony-cli/symfony-cli/commit/16762b6fd4ec93770011e58ffa443bf9a6940007
+ */
+function getSymfonyHomeDir(): string
+{
+    /** @var string|null */
+    static $dir;
+    if (isset($dir)) {
+        return $dir;
+    }
+
+    $legacy = getHomeDir() . '/.symfony5';
+    if (is_dir($legacy)) {
+        return $dir = $legacy;
+    }
+
+    return $dir = getUserConfigDir() . '/symfony5';
+}
+
+/**
  * Get Symfony Local Server configuration.
  *
  * @return array{tld: string, host: string, port: int, domains: array<string, string>}|array{}
@@ -45,7 +90,7 @@ function getSymfonyConfig(): array
         return $symfonyConfig;
     }
 
-    $symfonyconfigPath = sprintf('%s/.symfony5/proxy.json', getHomeDir());
+    $symfonyconfigPath = sprintf('%s/proxy.json', getSymfonyHomeDir());
     if (! is_file($symfonyconfigPath) || ! is_readable($symfonyconfigPath)) {
         return $symfonyConfig = [];
     }
@@ -166,7 +211,9 @@ function verifySsl($verify, $url): bool|string
         return $verify;
     }
 
-    return sprintf('%s/.symfony5/certs/rootCA.pem', getHomeDir());
+    $cert = sprintf('%s/certs/rootCA.pem', getSymfonyHomeDir());
+
+    return is_readable($cert) ? $cert : $verify;
 }
 
 /**
@@ -240,3 +287,4 @@ if (isSymfonyLocalServer()) {
     Hook::addFilter('wp_redirect_status', __NAMESPACE__ . '\\redirectWpAdminStatus', 10, 2);
     Hook::addFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
 }
+
