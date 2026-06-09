@@ -280,13 +280,17 @@ function redirectWpAdminStatus($status, $location): int
 /**
  * Adds index.php to the admin URL if no path is specified.
  *
- * @param string      $url     The complete admin area URL including scheme and path.
- * @param string      $path    Path relative to the admin area URL. Blank string if no path is specified.
- * @param int|null    $blog_id Site ID, or null for the current site.
- * @param string|null $scheme  The scheme to use. Accepts 'http', 'https',
- *                             'admin', or null. Default 'admin', which obeys force_ssl_admin() and is_ssl().
+ * Registered on both `admin_url` and `network_admin_url`. These filters do not
+ * share the same signature: `admin_url` passes ($url, $path, $blog_id, $scheme)
+ * while `network_admin_url` passes ($url, $path, $scheme). Only $url and $path
+ * are used, so the trailing arguments are optional to accommodate both.
+ *
+ * @param string                 $url  The complete admin area URL including scheme and path.
+ * @param string                 $path Path relative to the admin area URL. Blank string if no path is specified.
+ * @param int|string|null        $_arg Site ID (admin_url) or scheme (network_admin_url). Unused.
+ * @param string|null            $_scheme The scheme to use (admin_url only). Unused.
  */
-function rewriteAdminUrl($url, $path, $blog_id, $scheme): string
+function rewriteAdminUrl($url, $path = '', $_arg = null, $_scheme = null): string
 {
     $pathParts = parse_url($path);
     // It already has a path

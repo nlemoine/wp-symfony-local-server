@@ -73,4 +73,14 @@ class RewriteAdminUrlTest extends TestCase
 
         $this->assertStringEndsWith('/index.php', $result);
     }
+
+    public function testHandlesThreeArgumentNetworkAdminUrlSignature(): void
+    {
+        // network_admin_url applies its filter with only ($url, $path, $scheme).
+        $url = rtrim(network_admin_url(), '/');
+
+        $result = rewriteAdminUrl($url, '', 'admin');
+
+        $this->assertSame($url . '/index.php', $result);
+    }
 }
