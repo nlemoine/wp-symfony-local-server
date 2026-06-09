@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.1](https://github.com/nlemoine/wp-symfony-local-server/compare/v2.0.0...v2.0.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* guard verifySsl and redirectWpAdmin against missing WP functions ([a204c20](https://github.com/nlemoine/wp-symfony-local-server/commit/a204c2039e1a7b4301092721170ee5dbe3b161a6))
+* rewrite network_admin_url for multisite admin pages ([fa4593d](https://github.com/nlemoine/wp-symfony-local-server/commit/fa4593db796e2ce3e1c2b798b4ecba7ffa51e1f1))
+* support symfony-cli OS-specific config dirs ([77b1c7d](https://github.com/nlemoine/wp-symfony-local-server/commit/77b1c7d140687cebc1612cf8e4aede2665a76ce1))
+* update rewriteAdminUrl to accommodate network_admin_url signature and add test for three-argument case ([f76001d](https://github.com/nlemoine/wp-symfony-local-server/commit/f76001d91861e28669e194d5668c0e2fff32a6c9))
+
 ## [2.0.0](https://github.com/nlemoine/wp-symfony-local-server/compare/v1.2.0...v2.0.0) (2025-12-24)
 
 
