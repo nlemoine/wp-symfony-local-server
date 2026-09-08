@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/nlemoine/wp-symfony-local-server/compare/v2.0.1...v2.0.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* support renamed symfony-cli config directory ([6e56bd8](https://github.com/nlemoine/wp-symfony-local-server/commit/6e56bd80e6cb0b1e98ca72ded8fe704caf4a2396))
+
 ## [2.0.1](https://github.com/nlemoine/wp-symfony-local-server/compare/v2.0.0...v2.0.1) (2026-06-09)
 
 
