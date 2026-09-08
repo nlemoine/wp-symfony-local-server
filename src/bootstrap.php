@@ -76,6 +76,9 @@ function getUserConfigDir(): string
  *
  * Since symfony-cli prefers OS-specific config dirs but keeps the legacy ~/.symfony5 path when present.
  *
+ * Within the config dir, the directory itself was renamed from `symfony5` to `symfony-cli`, so probe
+ * both and prefer the one that exists. Falls back to the current name when neither is there yet.
+ *
  * @see https://github.com/symfony-cli/symfony-cli/commit/16762b6fd4ec93770011e58ffa443bf9a6940007
  */
 function getSymfonyHomeDir(): string
@@ -85,7 +88,15 @@ function getSymfonyHomeDir(): string
         return $legacy;
     }
 
-    return getUserConfigDir() . '/symfony5';
+    $configDir = getUserConfigDir();
+
+    foreach (['symfony-cli', 'symfony5'] as $dirName) {
+        if (is_dir($configDir . '/' . $dirName)) {
+            return $configDir . '/' . $dirName;
+        }
+    }
+
+    return $configDir . '/symfony-cli';
 }
 
 /**
@@ -313,4 +324,3 @@ if (isSymfonyLocalServer()) {
     Hook::addFilter('admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
     Hook::addFilter('network_admin_url', __NAMESPACE__ . '\\rewriteAdminUrl', PHP_INT_MAX, 4);
 }
-
