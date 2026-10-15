@@ -6,38 +6,52 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   php-versions:
+    name: Resolve PHP versions
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout
     outputs:
       versions: ${{ steps.versions.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - id: versions
-        uses: WyriHaximus/github-action-composer-php-versions-in-range@v1
+        uses: WyriHaximus/github-action-composer-php-versions-in-range@b1da538007a030a09a7d257bd3881829a3544882 # v2.1.0
         with:
           upcomingReleases: true
 
   unit-tests:
+    name: Unit tests (PHP ${{ matrix.php }})
     needs: php-versions
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # checkout
     strategy:
       fail-fast: false
       matrix:
         php: ${{ fromJson(needs.php-versions.outputs.versions) }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda # 4.0.0
       - run: composer test
 
   static-analysis:
-    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@main
-
+    name: Static analysis
+    permissions:
+      contents: read # checkout in the reusable workflow
+    uses: inpsyde/reusable-workflows/.github/workflows/static-analysis-php.yml@236c6b5a7fea73b5058b6f11bd17ff4b80994e54 # main
