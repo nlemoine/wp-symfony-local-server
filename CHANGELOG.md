@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/nlemoine/wp-symfony-local-server/compare/v2.0.2...v2.0.3) (2026-11-26)
+
+
+### Miscellaneous Chores
+
+* add GitHub Sponsors to composer funding ([c4598ae](https://github.com/nlemoine/wp-symfony-local-server/commit/c4598ae7b8677df5a5d72d5c95c0ac8b1ddd1e4c))
+
 ## [2.0.2](https://github.com/nlemoine/wp-symfony-local-server/compare/v2.0.1...v2.0.2) (2026-09-08)
 
 
